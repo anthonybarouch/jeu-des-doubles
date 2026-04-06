@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Le Jeu des Doubles</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ff9a9e 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 30px;
+      padding: 40px 30px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2em;
+      color: #e84393;
+      margin-bottom: 10px;
+    }
+
+    .stars {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+    }
+
+    .score {
+      font-size: 1.1em;
+      color: #636e72;
+      margin-bottom: 25px;
+    }
+
+    .question {
+      font-size: 1.5em;
+      color: #2d3436;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .number-highlight {
+      display: inline-block;
+      background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+      color: white;
+      font-weight: bold;
+      font-size: 1.3em;
+      padding: 5px 18px;
+      border-radius: 15px;
+      margin: 0 5px;
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .choice-btn {
+      font-size: 1.6em;
+      font-weight: bold;
+      padding: 20px;
+      border: 4px solid #dfe6e9;
+      border-radius: 20px;
+      background: white;
+      color: #2d3436;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .choice-btn:hover {
+      border-color: #a29bfe;
+      transform: scale(1.05);
+    }
+
+    .choice-btn:active {
+      transform: scale(0.98);
+    }
+
+    .choice-btn.correct {
+      background: #00b894;
+      border-color: #00b894;
+      color: white;
+      animation: pop 0.4s ease;
+    }
+
+    .choice-btn.wrong {
+      background: #ff7675;
+      border-color: #ff7675;
+      color: white;
+      animation: shake 0.4s ease;
+    }
+
+    .choice-btn.disabled {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .choice-btn.reveal-correct {
+      border-color: #00b894;
+      border-width: 4px;
+      background: #e0fcef;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    .feedback {
+      font-size: 1.8em;
+      margin-top: 20px;
+      min-height: 50px;
+      font-weight: bold;
+    }
+
+    .feedback.bravo {
+      color: #00b894;
+    }
+
+    .feedback.oops {
+      color: #e17055;
+    }
+
+    .next-btn {
+      margin-top: 20px;
+      padding: 15px 40px;
+      font-size: 1.2em;
+      font-weight: bold;
+      background: linear-gradient(135deg, #fd79a8, #e84393);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      display: none;
+      transition: transform 0.2s;
+    }
+
+    .next-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .streak {
+      margin-top: 15px;
+      font-size: 1em;
+      color: #b2bec3;
+    }
+
+    .streak .fire {
+      color: #e17055;
+    }
+
+    /* Start screen */
+    .start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .start-screen p {
+      font-size: 1.2em;
+      color: #636e72;
+      line-height: 1.6;
+    }
+
+    .start-btn {
+      padding: 18px 50px;
+      font-size: 1.4em;
+      font-weight: bold;
+      background: linear-gradient(135deg, #fd79a8, #e84393);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .start-btn:hover {
+      transform: scale(1.08);
+    }
+
+    /* End screen */
+    .end-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .end-screen .big-score {
+      font-size: 3em;
+      color: #6c5ce7;
+      font-weight: bold;
+    }
+
+    .end-screen .message {
+      font-size: 1.3em;
+      color: #2d3436;
+      line-height: 1.5;
+    }
+
+    .game-screen {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Start Screen -->
+    <div class="start-screen" id="startScreen">
+      <h1>Le Jeu des Doubles</h1>
+      <div class="stars">&#11088;&#11088;&#11088;</div>
+      <p>
+        Trouve les doubles des nombres de 1 a 20 !
+      </p>
+      <button class="start-btn" onclick="startGame()">Jouer !</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div class="game-screen" id="gameScreen">
+      <h1>Le Jeu des Doubles</h1>
+      <div class="score" id="score"></div>
+      <div class="question" id="question"></div>
+      <div class="choices" id="choices"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Suivant</button>
+      <div class="streak" id="streak"></div>
+    </div>
+
+    <!-- End Screen -->
+    <div class="end-screen" id="endScreen">
+      <h1>Bravo !</h1>
+      <div class="stars">&#127881;&#11088;&#127881;</div>
+      <div class="big-score" id="finalScore"></div>
+      <div class="message" id="finalMessage"></div>
+      <button class="start-btn" onclick="startGame()">Rejouer !</button>
+    </div>
+
+  </div>
+
+  <script>
+    const TOTAL_QUESTIONS = 10;
+
+    let state = {
+      current: 0,
+      correct: 0,
+      streak: 0,
+      bestStreak: 0,
+      answered: false,
+      questionData: null,
+    };
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateQuestion() {
+      const number = randomInt(1, 20);
+      const double = number * 2;
+      const isForward = Math.random() < 0.5;
+
+      let correctAnswer;
+      let questionText;
+
+      if (isForward) {
+        questionText = `Quel est le double de`;
+        correctAnswer = double;
+        return {
+          text: questionText,
+          highlight: number,
+          suffix: "?",
+          answer: correctAnswer,
+          type: "forward",
+          number,
+        };
+      } else {
+        questionText = `est le double de quel nombre ?`;
+        correctAnswer = number;
+        return {
+          text: "",
+          highlight: double,
+          suffix: questionText,
+          answer: correctAnswer,
+          type: "reverse",
+          number,
+        };
+      }
+    }
+
+    function generateChoices(correctAnswer, type) {
+      const choices = new Set();
+      choices.add(correctAnswer);
+
+      while (choices.size < 4) {
+        let wrong;
+        const strategy = Math.random();
+
+        if (strategy < 0.4) {
+          // Close values
+          wrong = correctAnswer + randomInt(-3, 3);
+        } else if (strategy < 0.7) {
+          // Common confusion: off by one double
+          wrong = correctAnswer + (Math.random() < 0.5 ? 2 : -2);
+        } else {
+          // Random in range
+          if (type === "forward") {
+            wrong = randomInt(2, 40);
+          } else {
+            wrong = randomInt(1, 20);
+          }
+        }
+
+        if (wrong > 0 && wrong !== correctAnswer) {
+          choices.add(wrong);
+        }
+      }
+
+      return shuffle([...choices]);
+    }
+
+    function renderQuestion() {
+      const q = generateQuestion();
+      state.questionData = q;
+      state.answered = false;
+
+      document.getElementById("score").textContent =
+        `Question ${state.current + 1} / ${TOTAL_QUESTIONS}`;
+
+      const questionEl = document.getElementById("question");
+      if (q.type === "forward") {
+        questionEl.innerHTML = `${q.text} <span class="number-highlight">${q.highlight}</span> ${q.suffix}`;
+      } else {
+        questionEl.innerHTML = `<span class="number-highlight">${q.highlight}</span> ${q.suffix}`;
+      }
+
+      const choices = generateChoices(q.answer, q.type);
+      const choicesEl = document.getElementById("choices");
+      choicesEl.innerHTML = "";
+
+      choices.forEach((c) => {
+        const btn = document.createElement("button");
+        btn.className = "choice-btn";
+        btn.textContent = c;
+        btn.onclick = () => handleAnswer(btn, c);
+        choicesEl.appendChild(btn);
+      });
+
+      document.getElementById("feedback").textContent = "";
+      document.getElementById("feedback").className = "feedback";
+      document.getElementById("nextBtn").style.display = "none";
+      updateStreak();
+    }
+
+    function handleAnswer(btn, value) {
+      if (state.answered) return;
+      state.answered = true;
+
+      const correct = value === state.questionData.answer;
+      const buttons = document.querySelectorAll(".choice-btn");
+
+      buttons.forEach((b) => {
+        b.classList.add("disabled");
+        if (parseInt(b.textContent) === state.questionData.answer) {
+          if (!correct) {
+            b.classList.add("reveal-correct");
+          }
+        }
+      });
+
+      const feedbackEl = document.getElementById("feedback");
+
+      if (correct) {
+        btn.classList.add("correct");
+        state.correct++;
+        state.streak++;
+        if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+
+        const messages = [
+          "Super !", "Bravo !", "Genial !", "Parfait !",
+          "Excellent !", "Trop forte !", "Magnifique !"
+        ];
+        feedbackEl.textContent = messages[randomInt(0, messages.length - 1)];
+        feedbackEl.className = "feedback bravo";
+      } else {
+        btn.classList.add("wrong");
+        state.streak = 0;
+
+        const n = state.questionData.number;
+        const d = n * 2;
+        feedbackEl.innerHTML = `Oups ! Le double de ${n} = <strong>${d}</strong>`;
+        feedbackEl.className = "feedback oops";
+      }
+
+      updateStreak();
+      document.getElementById("nextBtn").style.display = "inline-block";
+    }
+
+    function updateStreak() {
+      const streakEl = document.getElementById("streak");
+      if (state.streak >= 2) {
+        streakEl.innerHTML = `<span class="fire">&#128293;</span> ${state.streak} bonnes reponses d'affilee !`;
+      } else {
+        streakEl.textContent = "";
+      }
+    }
+
+    function nextQuestion() {
+      state.current++;
+      if (state.current >= TOTAL_QUESTIONS) {
+        showEnd();
+      } else {
+        renderQuestion();
+      }
+    }
+
+    function showEnd() {
+      document.getElementById("gameScreen").style.display = "none";
+      const endScreen = document.getElementById("endScreen");
+      endScreen.style.display = "flex";
+
+      document.getElementById("finalScore").textContent =
+        `${state.correct} / ${TOTAL_QUESTIONS}`;
+
+      let msg;
+      const pct = state.correct / TOTAL_QUESTIONS;
+      if (pct === 1) {
+        msg = "Score parfait ! Tu es une championne des doubles !";
+      } else if (pct >= 0.8) {
+        msg = "Tres bien ! Tu connais super bien tes doubles !";
+      } else if (pct >= 0.5) {
+        msg = "Pas mal ! Continue a t'entrainer !";
+      } else {
+        msg = "C'est bien d'essayer ! On recommence ?";
+      }
+
+      if (state.bestStreak >= 3) {
+        msg += `\nMeilleure serie : ${state.bestStreak} d'affilee !`;
+      }
+
+      document.getElementById("finalMessage").textContent = msg;
+    }
+
+    function startGame() {
+      state = {
+        current: 0,
+        correct: 0,
+        streak: 0,
+        bestStreak: 0,
+        answered: false,
+        questionData: null,
+      };
+
+      document.getElementById("startScreen").style.display = "none";
+      document.getElementById("endScreen").style.display = "none";
+      document.getElementById("gameScreen").style.display = "block";
+      renderQuestion();
+    }
+  </script>
+</body>
+</html>
