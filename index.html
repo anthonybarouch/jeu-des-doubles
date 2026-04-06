@@ -3,13 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Le Jeu des Doubles</title>
+  <title>Le Jeu des Doubles et Moities</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -26,210 +22,204 @@
       background: white;
       border-radius: 30px;
       padding: 40px 30px;
-      max-width: 500px;
+      max-width: 520px;
       width: 100%;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
       text-align: center;
     }
 
-    h1 {
-      font-size: 2em;
-      color: #e84393;
-      margin-bottom: 10px;
-    }
+    h1 { font-size: 2em; color: #e84393; margin-bottom: 10px; }
+    .stars { font-size: 1.5em; margin-bottom: 20px; }
 
-    .stars {
-      font-size: 1.5em;
-      margin-bottom: 20px;
-    }
-
-    .score {
-      font-size: 1.1em;
-      color: #636e72;
-      margin-bottom: 25px;
-    }
+    .score { font-size: 1.1em; color: #636e72; margin-bottom: 25px; }
 
     .question {
-      font-size: 1.5em;
-      color: #2d3436;
-      margin-bottom: 10px;
-      line-height: 1.4;
+      font-size: 1.5em; color: #2d3436;
+      margin-bottom: 10px; line-height: 1.4;
     }
 
     .number-highlight {
       display: inline-block;
       background: linear-gradient(135deg, #a29bfe, #6c5ce7);
-      color: white;
-      font-weight: bold;
-      font-size: 1.3em;
-      padding: 5px 18px;
-      border-radius: 15px;
-      margin: 0 5px;
+      color: white; font-weight: bold; font-size: 1.3em;
+      padding: 5px 18px; border-radius: 15px; margin: 0 5px;
     }
 
+    .number-highlight.half {
+      background: linear-gradient(135deg, #55efc4, #00b894);
+    }
+
+    /* QCM */
     .choices {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-top: 25px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 15px; margin-top: 25px;
     }
 
     .choice-btn {
-      font-size: 1.6em;
-      font-weight: bold;
-      padding: 20px;
-      border: 4px solid #dfe6e9;
-      border-radius: 20px;
-      background: white;
-      color: #2d3436;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      user-select: none;
+      font-size: 1.6em; font-weight: bold; padding: 20px;
+      border: 4px solid #dfe6e9; border-radius: 20px;
+      background: white; color: #2d3436; cursor: pointer;
+      transition: all 0.2s ease; user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
+    .choice-btn:hover { border-color: #a29bfe; transform: scale(1.05); }
+    .choice-btn:active { transform: scale(0.98); }
+    .choice-btn.correct { background: #00b894; border-color: #00b894; color: white; animation: pop 0.4s ease; }
+    .choice-btn.wrong { background: #ff7675; border-color: #ff7675; color: white; animation: shake 0.4s ease; }
+    .choice-btn.disabled { pointer-events: none; opacity: 0.6; }
+    .choice-btn.reveal-correct { border-color: #00b894; border-width: 4px; background: #e0fcef; }
 
-    .choice-btn:hover {
-      border-color: #a29bfe;
-      transform: scale(1.05);
+    /* Input */
+    .input-area {
+      margin-top: 25px; display: flex;
+      flex-direction: column; align-items: center; gap: 15px;
     }
 
-    .choice-btn:active {
-      transform: scale(0.98);
+    .answer-input {
+      font-size: 2.2em; font-weight: bold; text-align: center;
+      width: 150px; padding: 15px; border: 4px solid #dfe6e9;
+      border-radius: 20px; outline: none; color: #2d3436;
+      transition: border-color 0.2s; -moz-appearance: textfield;
     }
+    .answer-input::-webkit-outer-spin-button,
+    .answer-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .answer-input:focus { border-color: #a29bfe; }
+    .answer-input.correct { border-color: #00b894; background: #e0fcef; animation: pop 0.4s ease; }
+    .answer-input.wrong { border-color: #ff7675; background: #ffe0e0; animation: shake 0.4s ease; }
 
-    .choice-btn.correct {
-      background: #00b894;
-      border-color: #00b894;
-      color: white;
-      animation: pop 0.4s ease;
+    .validate-btn {
+      padding: 14px 40px; font-size: 1.3em; font-weight: bold;
+      background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+      color: white; border: none; border-radius: 50px;
+      cursor: pointer; transition: transform 0.2s;
     }
+    .validate-btn:hover { transform: scale(1.05); }
+    .validate-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
 
-    .choice-btn.wrong {
-      background: #ff7675;
-      border-color: #ff7675;
-      color: white;
-      animation: shake 0.4s ease;
-    }
+    @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 
-    .choice-btn.disabled {
-      pointer-events: none;
-      opacity: 0.6;
-    }
-
-    .choice-btn.reveal-correct {
-      border-color: #00b894;
-      border-width: 4px;
-      background: #e0fcef;
-    }
-
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-      100% { transform: scale(1); }
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      75% { transform: translateX(8px); }
-    }
-
-    .feedback {
-      font-size: 1.8em;
-      margin-top: 20px;
-      min-height: 50px;
-      font-weight: bold;
-    }
-
-    .feedback.bravo {
-      color: #00b894;
-    }
-
-    .feedback.oops {
-      color: #e17055;
-    }
+    .feedback { font-size: 1.8em; margin-top: 20px; min-height: 50px; font-weight: bold; }
+    .feedback.bravo { color: #00b894; }
+    .feedback.oops { color: #e17055; }
 
     .next-btn {
-      margin-top: 20px;
-      padding: 15px 40px;
-      font-size: 1.2em;
-      font-weight: bold;
+      margin-top: 20px; padding: 15px 40px; font-size: 1.2em; font-weight: bold;
       background: linear-gradient(135deg, #fd79a8, #e84393);
-      color: white;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      display: none;
-      transition: transform 0.2s;
+      color: white; border: none; border-radius: 50px;
+      cursor: pointer; display: none; transition: transform 0.2s;
     }
+    .next-btn:hover { transform: scale(1.05); }
 
-    .next-btn:hover {
-      transform: scale(1.05);
-    }
-
-    .streak {
-      margin-top: 15px;
-      font-size: 1em;
-      color: #b2bec3;
-    }
-
-    .streak .fire {
-      color: #e17055;
-    }
+    .streak { margin-top: 15px; font-size: 1em; color: #b2bec3; }
+    .streak .fire { color: #e17055; }
 
     /* Start screen */
     .start-screen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 15px;
+    }
+    .start-screen p { font-size: 1.2em; color: #636e72; line-height: 1.6; }
+
+    /* Settings row */
+    .settings-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; flex-wrap: wrap;
+    }
+    .settings-row label { font-size: 1em; color: #636e72; font-weight: bold; }
+    .settings-row select, .settings-row input[type="number"] {
+      font-size: 1.1em; padding: 8px 12px; border: 3px solid #dfe6e9;
+      border-radius: 12px; outline: none; width: 70px; text-align: center;
+      font-weight: bold; color: #2d3436;
+    }
+    .settings-row select:focus, .settings-row input[type="number"]:focus {
+      border-color: #a29bfe;
     }
 
-    .start-screen p {
-      font-size: 1.2em;
-      color: #636e72;
-      line-height: 1.6;
+    .type-toggle {
+      display: flex; gap: 8px; margin-top: 5px;
     }
-
-    .start-btn {
-      padding: 18px 50px;
-      font-size: 1.4em;
-      font-weight: bold;
-      background: linear-gradient(135deg, #fd79a8, #e84393);
-      color: white;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: transform 0.2s;
+    .type-toggle button {
+      padding: 8px 16px; font-size: 0.95em; font-weight: bold;
+      border: 3px solid #dfe6e9; border-radius: 12px;
+      background: white; color: #636e72; cursor: pointer;
+      transition: all 0.2s;
     }
+    .type-toggle button.active {
+      border-color: #6c5ce7; background: #f0edff; color: #6c5ce7;
+    }
+    .type-toggle button:hover { border-color: #a29bfe; }
 
-    .start-btn:hover {
-      transform: scale(1.08);
+    .mode-buttons {
+      display: flex; flex-direction: column;
+      gap: 12px; width: 100%; max-width: 340px; margin-top: 5px;
+    }
+    .mode-btn {
+      padding: 16px 24px; font-size: 1.15em; font-weight: bold;
+      border: 4px solid #dfe6e9; border-radius: 20px;
+      background: white; color: #2d3436; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .mode-btn:hover { border-color: #e84393; transform: scale(1.03); }
+    .mode-btn .mode-icon { font-size: 1.3em; margin-right: 8px; }
+    .mode-btn .mode-desc { font-size: 0.75em; font-weight: normal; color: #636e72; display: block; margin-top: 4px; }
+
+    .mode-btn.controle-btn { border-color: #fdcb6e; }
+    .mode-btn.controle-btn:hover { border-color: #e17055; }
+
+    /* Timer bar */
+    .timer-bar-container {
+      width: 100%; height: 14px; background: #dfe6e9;
+      border-radius: 7px; margin-bottom: 15px; overflow: hidden;
+    }
+    .timer-bar {
+      height: 100%; background: linear-gradient(90deg, #00b894, #55efc4);
+      border-radius: 7px; transition: width 0.5s linear;
+    }
+    .timer-bar.warning { background: linear-gradient(90deg, #fdcb6e, #e17055); }
+    .timer-bar.danger { background: linear-gradient(90deg, #ff7675, #d63031); }
+
+    .timer-text {
+      font-size: 1.3em; font-weight: bold; color: #636e72; margin-bottom: 10px;
+    }
+    .timer-text.warning { color: #e17055; }
+    .timer-text.danger { color: #d63031; }
+
+    /* Controle question - compact */
+    .controle-counter {
+      font-size: 1em; color: #b2bec3; margin-bottom: 8px;
     }
 
     /* End screen */
     .end-screen {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
+      display: none; flex-direction: column;
+      align-items: center; gap: 15px;
     }
+    .end-screen .big-score { font-size: 3em; color: #6c5ce7; font-weight: bold; }
+    .end-screen .message { font-size: 1.3em; color: #2d3436; line-height: 1.5; }
 
-    .end-screen .big-score {
-      font-size: 3em;
-      color: #6c5ce7;
-      font-weight: bold;
+    .restart-btn {
+      padding: 18px 50px; font-size: 1.4em; font-weight: bold;
+      background: linear-gradient(135deg, #fd79a8, #e84393);
+      color: white; border: none; border-radius: 50px;
+      cursor: pointer; transition: transform 0.2s;
     }
+    .restart-btn:hover { transform: scale(1.08); }
 
-    .end-screen .message {
-      font-size: 1.3em;
-      color: #2d3436;
-      line-height: 1.5;
-    }
+    .game-screen { display: none; }
 
-    .game-screen {
-      display: none;
+    /* Review list at end of controle */
+    .review-list {
+      text-align: left; margin-top: 15px; font-size: 1em;
+      max-height: 200px; overflow-y: auto; width: 100%;
+      padding: 0 10px;
     }
+    .review-item {
+      padding: 6px 0; border-bottom: 1px solid #f0f0f0;
+      display: flex; justify-content: space-between;
+    }
+    .review-item.wrong-item { color: #e17055; }
+    .review-item.correct-item { color: #00b894; }
   </style>
 </head>
 <body>
@@ -237,20 +227,59 @@
 
     <!-- Start Screen -->
     <div class="start-screen" id="startScreen">
-      <h1>Le Jeu des Doubles</h1>
+      <h1>Les Doubles et Moities</h1>
       <div class="stars">&#11088;&#11088;&#11088;</div>
-      <p>
-        Trouve les doubles des nombres de 1 a 20 !
-      </p>
-      <button class="start-btn" onclick="startGame()">Jouer !</button>
+
+      <div class="settings-row">
+        <label>Nombres de</label>
+        <input type="number" id="minNum" value="1" min="1" max="50">
+        <label>a</label>
+        <input type="number" id="maxNum" value="20" min="2" max="100">
+      </div>
+
+      <div class="settings-row">
+        <label>Questions :</label>
+        <div class="type-toggle" id="typeToggle">
+          <button class="active" data-type="both">Doubles + Moities</button>
+          <button data-type="doubles">Doubles</button>
+          <button data-type="halves">Moities</button>
+        </div>
+      </div>
+
+      <p style="font-size:1.1em; color:#2d3436; font-weight:bold; margin-top:5px;">Choisis ton mode :</p>
+      <div class="mode-buttons">
+        <button class="mode-btn" onclick="startGame('qcm')">
+          <span class="mode-icon">&#127919;</span> Choix multiples
+          <span class="mode-desc">4 reponses, tu cliques sur la bonne</span>
+        </button>
+        <button class="mode-btn" onclick="startGame('input')">
+          <span class="mode-icon">&#9000;</span> Clavier
+          <span class="mode-desc">Tu tapes la reponse toi-meme</span>
+        </button>
+        <button class="mode-btn controle-btn" onclick="startGame('controle')">
+          <span class="mode-icon">&#9201;</span> Controle (3 min)
+          <span class="mode-desc">28 questions chrono, comme a l'ecole !</span>
+        </button>
+      </div>
     </div>
 
     <!-- Game Screen -->
     <div class="game-screen" id="gameScreen">
-      <h1>Le Jeu des Doubles</h1>
+      <h1 id="gameTitle">Les Doubles</h1>
+      <div id="timerSection" style="display:none;">
+        <div class="timer-text" id="timerText">3:00</div>
+        <div class="timer-bar-container">
+          <div class="timer-bar" id="timerBar" style="width:100%"></div>
+        </div>
+      </div>
       <div class="score" id="score"></div>
+      <div class="controle-counter" id="controleCounter" style="display:none;"></div>
       <div class="question" id="question"></div>
       <div class="choices" id="choices"></div>
+      <div class="input-area" id="inputArea" style="display:none;">
+        <input type="number" class="answer-input" id="answerInput" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+        <button class="validate-btn" id="validateBtn" onclick="validateInput()">Valider</button>
+      </div>
       <div class="feedback" id="feedback"></div>
       <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Suivant</button>
       <div class="streak" id="streak"></div>
@@ -258,26 +287,34 @@
 
     <!-- End Screen -->
     <div class="end-screen" id="endScreen">
-      <h1>Bravo !</h1>
-      <div class="stars">&#127881;&#11088;&#127881;</div>
+      <h1 id="endTitle">Bravo !</h1>
+      <div class="stars" id="endStars">&#127881;&#11088;&#127881;</div>
       <div class="big-score" id="finalScore"></div>
       <div class="message" id="finalMessage"></div>
-      <button class="start-btn" onclick="startGame()">Rejouer !</button>
+      <div class="review-list" id="reviewList" style="display:none;"></div>
+      <button class="restart-btn" onclick="goHome()">Rejouer !</button>
     </div>
 
   </div>
 
   <script>
-    const TOTAL_QUESTIONS = 10;
+    const CONTROLE_QUESTIONS = 28;
+    const CONTROLE_TIME = 180; // 3 minutes in seconds
+    const PRACTICE_QUESTIONS = 10;
 
-    let state = {
-      current: 0,
-      correct: 0,
-      streak: 0,
-      bestStreak: 0,
-      answered: false,
-      questionData: null,
-    };
+    let state = {};
+    let timerInterval = null;
+
+    let selectedType = "both"; // "both", "doubles", "halves"
+
+    // Type toggle buttons
+    document.querySelectorAll("#typeToggle button").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll("#typeToggle button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedType = btn.dataset.type;
+      };
+    });
 
     function shuffle(arr) {
       const a = [...arr];
@@ -292,36 +329,83 @@
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
+    function getSettings() {
+      const min = Math.max(1, parseInt(document.getElementById("minNum").value) || 1);
+      const max = Math.min(100, parseInt(document.getElementById("maxNum").value) || 20);
+      return { min: Math.min(min, max), max: Math.max(min, max) };
+    }
+
     function generateQuestion() {
-      const number = randomInt(1, 20);
+      const { min, max } = state.settings;
+      const number = randomInt(min, max);
       const double = number * 2;
-      const isForward = Math.random() < 0.5;
 
-      let correctAnswer;
-      let questionText;
+      let canDouble = selectedType === "both" || selectedType === "doubles";
+      let canHalf = selectedType === "both" || selectedType === "halves";
 
-      if (isForward) {
-        questionText = `Quel est le double de`;
-        correctAnswer = double;
-        return {
-          text: questionText,
-          highlight: number,
-          suffix: "?",
-          answer: correctAnswer,
-          type: "forward",
-          number,
-        };
+      // For halves, we need even numbers to get clean results
+      // We'll ask "la moitie de (number*2)" so answer is always a whole number
+      let isDouble;
+      if (canDouble && canHalf) {
+        isDouble = Math.random() < 0.5;
       } else {
-        questionText = `est le double de quel nombre ?`;
-        correctAnswer = number;
-        return {
-          text: "",
-          highlight: double,
-          suffix: questionText,
-          answer: correctAnswer,
-          type: "reverse",
-          number,
-        };
+        isDouble = canDouble;
+      }
+
+      if (isDouble) {
+        // Double question - two variants
+        const isForward = Math.random() < 0.5;
+        if (isForward) {
+          return {
+            text: "Le double de",
+            highlight: number,
+            suffix: "?",
+            answer: double,
+            type: "double-forward",
+            number,
+            highlightClass: "",
+            label: `Le double de ${number}`,
+          };
+        } else {
+          return {
+            text: "",
+            highlight: double,
+            suffix: "est le double de ?",
+            answer: number,
+            type: "double-reverse",
+            number,
+            highlightClass: "",
+            label: `${double} est le double de ?`,
+          };
+        }
+      } else {
+        // Half question - we pick an even number
+        const evenNum = number * 2;
+        const half = number;
+        const isForward = Math.random() < 0.5;
+        if (isForward) {
+          return {
+            text: "La moitie de",
+            highlight: evenNum,
+            suffix: "?",
+            answer: half,
+            type: "half-forward",
+            number: half,
+            highlightClass: "half",
+            label: `La moitie de ${evenNum}`,
+          };
+        } else {
+          return {
+            text: "",
+            highlight: half,
+            suffix: "est la moitie de ?",
+            answer: evenNum,
+            type: "half-reverse",
+            number: half,
+            highlightClass: "half",
+            label: `${half} est la moitie de ?`,
+          };
+        }
       }
     }
 
@@ -334,17 +418,15 @@
         const strategy = Math.random();
 
         if (strategy < 0.4) {
-          // Close values
           wrong = correctAnswer + randomInt(-3, 3);
         } else if (strategy < 0.7) {
-          // Common confusion: off by one double
           wrong = correctAnswer + (Math.random() < 0.5 ? 2 : -2);
         } else {
-          // Random in range
-          if (type === "forward") {
-            wrong = randomInt(2, 40);
+          const { min, max } = state.settings;
+          if (type.includes("forward")) {
+            wrong = randomInt(min, max * 2);
           } else {
-            wrong = randomInt(1, 20);
+            wrong = randomInt(min, max);
           }
         }
 
@@ -361,35 +443,69 @@
       state.questionData = q;
       state.answered = false;
 
-      document.getElementById("score").textContent =
-        `Question ${state.current + 1} / ${TOTAL_QUESTIONS}`;
+      const isControle = state.mode === "controle";
+      const total = isControle ? CONTROLE_QUESTIONS : PRACTICE_QUESTIONS;
 
-      const questionEl = document.getElementById("question");
-      if (q.type === "forward") {
-        questionEl.innerHTML = `${q.text} <span class="number-highlight">${q.highlight}</span> ${q.suffix}`;
+      if (isControle) {
+        document.getElementById("score").style.display = "none";
+        document.getElementById("controleCounter").style.display = "block";
+        document.getElementById("controleCounter").textContent =
+          `${state.current + 1} / ${total}`;
       } else {
-        questionEl.innerHTML = `<span class="number-highlight">${q.highlight}</span> ${q.suffix}`;
+        document.getElementById("score").textContent =
+          `Question ${state.current + 1} / ${total}`;
+        document.getElementById("controleCounter").style.display = "none";
       }
 
-      const choices = generateChoices(q.answer, q.type);
-      const choicesEl = document.getElementById("choices");
-      choicesEl.innerHTML = "";
+      const questionEl = document.getElementById("question");
+      const hlClass = q.highlightClass ? `number-highlight ${q.highlightClass}` : "number-highlight";
 
-      choices.forEach((c) => {
-        const btn = document.createElement("button");
-        btn.className = "choice-btn";
-        btn.textContent = c;
-        btn.onclick = () => handleAnswer(btn, c);
-        choicesEl.appendChild(btn);
-      });
+      if (q.text) {
+        questionEl.innerHTML = `${q.text} <span class="${hlClass}">${q.highlight}</span> ${q.suffix}`;
+      } else {
+        questionEl.innerHTML = `<span class="${hlClass}">${q.highlight}</span> ${q.suffix}`;
+      }
+
+      const choicesEl = document.getElementById("choices");
+      const inputArea = document.getElementById("inputArea");
+
+      if (state.mode === "qcm") {
+        choicesEl.style.display = "grid";
+        inputArea.style.display = "none";
+        choicesEl.innerHTML = "";
+
+        const choices = generateChoices(q.answer, q.type);
+        choices.forEach((c) => {
+          const btn = document.createElement("button");
+          btn.className = "choice-btn";
+          btn.textContent = c;
+          btn.onclick = () => handleAnswerQCM(btn, c);
+          choicesEl.appendChild(btn);
+        });
+      } else {
+        // input or controle
+        choicesEl.style.display = "none";
+        inputArea.style.display = "flex";
+        const input = document.getElementById("answerInput");
+        input.value = "";
+        input.className = "answer-input";
+        input.disabled = false;
+        input.focus();
+        document.getElementById("validateBtn").disabled = false;
+      }
 
       document.getElementById("feedback").textContent = "";
       document.getElementById("feedback").className = "feedback";
       document.getElementById("nextBtn").style.display = "none";
-      updateStreak();
+
+      if (!isControle) {
+        updateStreak();
+      } else {
+        document.getElementById("streak").textContent = "";
+      }
     }
 
-    function handleAnswer(btn, value) {
+    function handleAnswerQCM(btn, value) {
       if (state.answered) return;
       state.answered = true;
 
@@ -398,40 +514,91 @@
 
       buttons.forEach((b) => {
         b.classList.add("disabled");
-        if (parseInt(b.textContent) === state.questionData.answer) {
-          if (!correct) {
-            b.classList.add("reveal-correct");
-          }
+        if (parseInt(b.textContent) === state.questionData.answer && !correct) {
+          b.classList.add("reveal-correct");
         }
       });
 
-      const feedbackEl = document.getElementById("feedback");
+      recordAnswer(correct);
+      showFeedback(correct, btn);
+    }
 
+    function validateInput() {
+      if (state.answered) return;
+
+      const input = document.getElementById("answerInput");
+      const value = parseInt(input.value);
+      if (isNaN(value)) { input.focus(); return; }
+
+      state.answered = true;
+      input.disabled = true;
+      document.getElementById("validateBtn").disabled = true;
+
+      const correct = value === state.questionData.answer;
+      input.classList.add(correct ? "correct" : "wrong");
+
+      recordAnswer(correct);
+      showFeedback(correct, null);
+    }
+
+    function recordAnswer(correct) {
       if (correct) {
-        btn.classList.add("correct");
         state.correct++;
         state.streak++;
         if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+      } else {
+        state.streak = 0;
+      }
 
-        const messages = [
-          "Super !", "Bravo !", "Genial !", "Parfait !",
-          "Excellent !", "Trop forte !", "Magnifique !"
-        ];
+      state.history.push({
+        label: state.questionData.label,
+        answer: state.questionData.answer,
+        correct,
+      });
+    }
+
+    function showFeedback(correct, btn) {
+      const feedbackEl = document.getElementById("feedback");
+      const isControle = state.mode === "controle";
+
+      if (correct) {
+        if (btn) btn.classList.add("correct");
+        const messages = ["Super !", "Bravo !", "Genial !", "Parfait !", "Excellent !", "Trop forte !", "Magnifique !"];
         feedbackEl.textContent = messages[randomInt(0, messages.length - 1)];
         feedbackEl.className = "feedback bravo";
       } else {
-        btn.classList.add("wrong");
-        state.streak = 0;
-
+        if (btn) btn.classList.add("wrong");
         const n = state.questionData.number;
         const d = n * 2;
-        feedbackEl.innerHTML = `Oups ! Le double de ${n} = <strong>${d}</strong>`;
+        if (state.questionData.type.includes("half")) {
+          feedbackEl.innerHTML = `Oups ! La moitie de ${d} = <strong>${n}</strong>`;
+        } else {
+          feedbackEl.innerHTML = `Oups ! Le double de ${n} = <strong>${d}</strong>`;
+        }
         feedbackEl.className = "feedback oops";
       }
 
-      updateStreak();
-      document.getElementById("nextBtn").style.display = "inline-block";
+      if (!isControle) {
+        updateStreak();
+        document.getElementById("nextBtn").style.display = "inline-block";
+      } else {
+        // In controle mode, auto-advance after short delay
+        setTimeout(() => {
+          if (state.timeUp) return;
+          nextQuestion();
+        }, correct ? 400 : 1200);
+      }
     }
+
+    document.getElementById("answerInput").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        if (!state.answered) {
+          validateInput();
+        } else if (state.mode !== "controle") {
+          nextQuestion();
+        }
+      }
+    });
 
     function updateStreak() {
       const streakEl = document.getElementById("streak");
@@ -444,31 +611,98 @@
 
     function nextQuestion() {
       state.current++;
-      if (state.current >= TOTAL_QUESTIONS) {
+      const total = state.mode === "controle" ? CONTROLE_QUESTIONS : PRACTICE_QUESTIONS;
+      if (state.current >= total) {
         showEnd();
       } else {
         renderQuestion();
       }
     }
 
+    // Timer
+    function startTimer() {
+      state.timeRemaining = CONTROLE_TIME;
+      state.timeUp = false;
+      const timerSection = document.getElementById("timerSection");
+      timerSection.style.display = "block";
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+        state.timeRemaining--;
+        updateTimerDisplay();
+
+        if (state.timeRemaining <= 0) {
+          state.timeUp = true;
+          clearInterval(timerInterval);
+          timerInterval = null;
+          showEnd();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const t = state.timeRemaining;
+      const mins = Math.floor(t / 60);
+      const secs = t % 60;
+      const text = document.getElementById("timerText");
+      const bar = document.getElementById("timerBar");
+      const pct = (t / CONTROLE_TIME) * 100;
+
+      text.textContent = `${mins}:${secs.toString().padStart(2, "0")}`;
+      bar.style.width = pct + "%";
+
+      text.className = "timer-text";
+      bar.className = "timer-bar";
+
+      if (t <= 30) {
+        text.classList.add("danger");
+        bar.classList.add("danger");
+      } else if (t <= 60) {
+        text.classList.add("warning");
+        bar.classList.add("warning");
+      }
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
     function showEnd() {
+      stopTimer();
       document.getElementById("gameScreen").style.display = "none";
       const endScreen = document.getElementById("endScreen");
       endScreen.style.display = "flex";
 
-      document.getElementById("finalScore").textContent =
-        `${state.correct} / ${TOTAL_QUESTIONS}`;
+      const total = state.mode === "controle" ? state.current : PRACTICE_QUESTIONS;
+      document.getElementById("finalScore").textContent = `${state.correct} / ${total}`;
 
+      const pct = total > 0 ? state.correct / total : 0;
       let msg;
-      const pct = state.correct / TOTAL_QUESTIONS;
       if (pct === 1) {
-        msg = "Score parfait ! Tu es une championne des doubles !";
+        msg = "Score parfait ! Tu es une championne !";
       } else if (pct >= 0.8) {
-        msg = "Tres bien ! Tu connais super bien tes doubles !";
+        msg = "Tres bien ! Tu connais super bien tes doubles et moities !";
       } else if (pct >= 0.5) {
         msg = "Pas mal ! Continue a t'entrainer !";
       } else {
         msg = "C'est bien d'essayer ! On recommence ?";
+      }
+
+      if (state.mode === "controle") {
+        const elapsed = CONTROLE_TIME - (state.timeRemaining || 0);
+        const eMins = Math.floor(elapsed / 60);
+        const eSecs = elapsed % 60;
+        if (state.timeUp) {
+          msg += `\nTemps ecoule !`;
+        } else {
+          msg += `\nTermine en ${eMins}:${eSecs.toString().padStart(2, "0")} !`;
+        }
+        document.getElementById("endTitle").textContent = pct >= 0.5 ? "Bravo !" : "Fini !";
+      } else {
+        document.getElementById("endTitle").textContent = "Bravo !";
       }
 
       if (state.bestStreak >= 3) {
@@ -476,9 +710,36 @@
       }
 
       document.getElementById("finalMessage").textContent = msg;
+
+      // Show review for wrong answers
+      const wrongAnswers = state.history.filter(h => !h.correct);
+      const reviewEl = document.getElementById("reviewList");
+      if (wrongAnswers.length > 0) {
+        reviewEl.style.display = "block";
+        reviewEl.innerHTML = `<p style="font-weight:bold; color:#e17055; margin-bottom:8px;">A revoir :</p>` +
+          wrongAnswers.map(h =>
+            `<div class="review-item wrong-item">
+              <span>${h.label}</span>
+              <strong>= ${h.answer}</strong>
+            </div>`
+          ).join("");
+      } else {
+        reviewEl.style.display = "none";
+      }
     }
 
-    function startGame() {
+    function goHome() {
+      stopTimer();
+      document.getElementById("endScreen").style.display = "none";
+      document.getElementById("gameScreen").style.display = "none";
+      document.getElementById("startScreen").style.display = "flex";
+      document.getElementById("timerSection").style.display = "none";
+      document.getElementById("reviewList").style.display = "none";
+    }
+
+    function startGame(mode) {
+      const settings = getSettings();
+
       state = {
         current: 0,
         correct: 0,
@@ -486,11 +747,32 @@
         bestStreak: 0,
         answered: false,
         questionData: null,
+        mode: mode,
+        settings: settings,
+        history: [],
+        timeRemaining: CONTROLE_TIME,
+        timeUp: false,
       };
+
+      const title = document.getElementById("gameTitle");
+      if (selectedType === "doubles") title.textContent = "Les Doubles";
+      else if (selectedType === "halves") title.textContent = "Les Moities";
+      else title.textContent = "Doubles et Moities";
+
+      if (mode === "controle") {
+        title.textContent = "Controle !";
+      }
 
       document.getElementById("startScreen").style.display = "none";
       document.getElementById("endScreen").style.display = "none";
       document.getElementById("gameScreen").style.display = "block";
+
+      if (mode === "controle") {
+        startTimer();
+      } else {
+        document.getElementById("timerSection").style.display = "none";
+      }
+
       renderQuestion();
     }
   </script>
